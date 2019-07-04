@@ -20,21 +20,39 @@ mongoose.connect("mongodb://localhost/techScrap", { useNewUrlParser: true });
 // A GET route for scraping the echoJS website
 app.get("/scrape", function (req, res) {
     // First, we grab the body of the html with axios
-    axios.get("https://www.businessinsider.com/sai").then(function (response) {
+    axios.get("https://www.nytimes.com/").then(function (response) {
         // Then, we load that into cheerio and save it to $ for a shorthand selector
         var $ = cheerio.load(response.data);
 
-        $("h2 a").each(function (i, element) {
+        var article = [];
+
+        $(".assetWrapper").each(function (i, element) {
             // Save an empty result object
             var result = {};
 
-            result.title = $(this)
-            .children("a")
-            .text();
-          result.link = $(this)
-            .children("a")
-            .attr("href");
+            result.headline = $(this)
+                .find("h2")
+                .text();
+            result.summary = $(this)
+                .find("p")
+                .text();
+            result.link = $(this)
+                .find("a")
+                .attr("href");
+            console.log(result);
+
+            article.push(result);
+
 
         });
+        //connect to database
+        db.Article.create(article).then(function (data) {
+            console.log(data);
+
+        })
     });
 });
+
+app.listen(PORT, function () {
+    console.log(PORT);
+})
